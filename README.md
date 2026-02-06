@@ -1,230 +1,139 @@
-# 🩺 AI Healthcare Voice Assistant
+# Healthcare AI Voice Agent – AI-Powered Medical Assistant & Voice Triage
 
-A comprehensive full-stack healthcare application that leverages AI-powered voice interactions for patient triage, symptom analysis, specialist mapping, and appointment booking. Built with modern technologies including FastAPI, PostgreSQL, React, and integrated with leading AI models.
-
----
-
-## 🔄 System Architecture & User Flow
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                           🎤 VOICE-ENABLED USER INTERFACE                           │
-│                                  (React Frontend)                                   │
-└─────────────────────┬───────────────────────────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                              🔐 USER AUTHENTICATION                                 │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │   User Login    │───▶│  FastAPI Backend │───▶│     PostgreSQL Database         │ │
-│  │ (Email/Password)│    │   sp_login_user  │    │      (users table)             │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-└─────────────────────┬───────────────────────────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                          🎙️ VOICE SYMPTOM COLLECTION                               │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │  Web Speech API │───▶│ Speech-to-Text   │───▶│    Symptom Phrases Array       │ │
-│  │  (Microphone)   │    │   Conversion     │    │   ["headache", "fever", ...]   │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-└─────────────────────┬───────────────────────────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                        🤖 AI-POWERED SYMPTOM ANALYSIS                              │
-│                              (LangGraph Workflow)                                  │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │   Raw Symptoms  │───▶│  Gemini/GPT-4    │───▶│   Normalized Symptoms           │ │
-│  │   Processing    │    │   AI Analysis    │    │ ["migraine", "pyrexia", ...]    │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-│                                  │                                                  │
-│                                  ▼                                                  │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │   Specialist    │◀───│   AI Mapping     │◀───│     Symptom Analysis            │ │
-│  │ Recommendation  │    │    Algorithm     │    │      & Classification          │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-└─────────────────────┬───────────────────────────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                          🏥 DOCTOR MATCHING & RETRIEVAL                            │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │   Specialist    │───▶│     FastAPI      │───▶│      PostgreSQL Query          │ │
-│  │     Types       │    │sp_get_doctors_by │    │    (doctors table filter)      │ │
-│  │ ["cardiology",  │    │   _specialist    │    │                                 │ │
-│  │ "neurology"]    │    │                  │    │                                 │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-│                                  │                                                  │
-│                                  ▼                                                  │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │  Available      │◀───│   Doctor List    │◀───│     Available Time Slots       │ │
-│  │   Doctors       │    │   with Slots     │    │        & Schedules             │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-└─────────────────────┬───────────────────────────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                           📅 APPOINTMENT BOOKING                                   │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │   User Selects  │───▶│     Patient      │───▶│       Appointment               │ │
-│  │ Doctor & Slot   │    │   Information    │    │      Confirmation               │ │
-│  │                 │    │sp_get_patient_   │    │  sp_create_appointment          │ │
-│  │                 │    │    details       │    │                                 │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-└─────────────────────┬───────────────────────────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                            💳 PAYMENT PROCESSING                                   │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │   Razorpay      │───▶│   Secure Payment │───▶│      Booking Confirmation       │ │
-│  │   Gateway       │    │    Processing    │    │       & Notification            │ │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────────────┘
-
-                                        ▼
-
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                          ✅ COMPLETE HEALTHCARE JOURNEY                            │
-│                                                                                     │
-│  🎤 Voice Input → 🤖 AI Analysis → 🏥 Doctor Match → 📅 Booking → 💳 Payment      │
-└─────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-## 🔍 Detailed Component Interaction Flow
-
-### 1. **User Authentication Flow**
-```
-User Input (Email/Password) → FastAPI Login Endpoint → PostgreSQL sp_login_user → JWT Token/Session
-```
-
-### 2. **Voice Processing Pipeline**
-```
-Microphone → Web Speech API → Text Conversion → Phrase Array → LangGraph Processing
-```
-
-### 3. **AI Analysis Workflow**
-```
-Raw Symptoms → Gemini/GPT-4 → Normalized Symptoms → Specialist Mapping → Doctor Recommendations
-```
-
-### 4. **Database Integration Pattern**
-```
-FastAPI Endpoints → PostgreSQL Stored Procedures → Data Retrieval → JSON Response → Frontend Display
-```
-
-### 5. **Appointment Booking Chain**
-```
-Doctor Selection → Patient Details Fetch → Slot Validation → Appointment Creation → Payment Processing
-```
+**Healthcare AI Voice Agent** is a full-stack healthcare application that uses **AI-powered voice interactions** for patient triage, symptom analysis, specialist matching, and appointment booking. Built with **FastAPI**, **PostgreSQL**, **React**, **LangGraph**, and leading AI models (Gemini, GPT-4).
 
 ---
 
-## 🏗️ Technical Architecture Overview
+## Author & Contact
+
+| | |
+|---|---|
+| **Author** | **KuchikiRenji** |
+| **Email** | [KuchikiRenji@outlook.com](mailto:KuchikiRenji@outlook.com) |
+| **GitHub** | [github.com/KuchikiRenji](https://github.com/KuchikiRenji) |
+| **Discord** | `kuchiki_renji` |
+
+For questions, collaboration, or support, reach out via the links above or open an issue on GitHub.
+
+---
+
+## Table of Contents
+
+- [What Is Healthcare AI Voice Agent?](#what-is-healthcare-ai-voice-agent)
+- [Key Features](#key-features)
+- [System Architecture & User Flow](#system-architecture--user-flow)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [API Keys & Configuration](#api-keys--configuration)
+- [Running the Application](#running-the-application)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+---
+
+## What Is Healthcare AI Voice Agent?
+
+This **healthcare AI assistant** streamlines the patient journey by providing:
+
+- **Intelligent voice triage** – Natural-language symptom collection and analysis via voice
+- **AI-powered symptom analysis** – Symptom normalization and specialist recommendation (Gemini, GPT-4, LangGraph)
+- **Smart doctor matching** – Healthcare provider lookup by specialization (PostgreSQL)
+- **Appointment booking** – Scheduling with optional payment (Razorpay)
+- **Voice-enabled UI** – React frontend with Web Speech API for a conversational experience
+
+Ideal for **medical triage**, **symptom checker** projects, **healthcare chatbots**, and **AI voice assistants** in healthcare.
+
+---
+
+## Key Features
+
+| Area | Features |
+|------|----------|
+| **Voice** | Web Speech API, real-time speech-to-text, voice-guided triage |
+| **AI/ML** | Gemini & GPT-4 integration, LangGraph workflows, symptom normalization, specialist mapping |
+| **Healthcare** | Doctor database, specialization filter, appointment scheduling, medical history |
+| **Payments** | Razorpay integration, test mode, transaction handling |
+
+---
+
+## System Architecture & User Flow
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│                 │    │                 │    │                 │    │                 │
-│   FRONTEND      │◀──▶│    BACKEND      │◀──▶│    DATABASE     │◀──▶│   EXTERNAL      │
-│                 │    │                 │    │                 │    │   SERVICES      │
-│  • React        │    │  • FastAPI      │    │  • PostgreSQL   │    │  • Gemini API   │
-│  • Web Speech   │    │  • LangGraph    │    │  • Stored Procs │    │  • OpenAI API   │
-│  • JavaScript   │    │  • Python       │    │  • Functions    │    │  • Razorpay     │
-│                 │    │                 │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
-        │                        │                        │                        │
-        └────────────────────────┼────────────────────────┼────────────────────────┘
-                                 │                        │
-                            HTTP/REST API            SQL Queries
-                         (JSON Data Exchange)    (Stored Procedures)
+Voice UI (React) → Auth (FastAPI + PostgreSQL) → Voice symptoms (Web Speech API)
+    → AI analysis (LangGraph + Gemini/GPT-4) → Specialist lookup (DB)
+    → Doctor list & slots → Appointment booking → Payment (Razorpay) → Done
+```
+
+### Component Flow
+
+1. **Authentication** – Email/password → FastAPI `/login` → `sp_login_user` → JWT/session
+2. **Voice pipeline** – Microphone → Web Speech API → text → phrase array → LangGraph
+3. **AI workflow** – Raw symptoms → Gemini/GPT-4 → normalized symptoms → specialist mapping → recommendations
+4. **Data** – FastAPI → PostgreSQL stored procedures → JSON → frontend
+5. **Booking** – Doctor + slot → patient details → slot check → `sp_create_appointment` → payment
+
+### Technical Layers
+
+| Layer | Stack |
+|-------|--------|
+| **Frontend** | React, Vite, Web Speech API |
+| **Backend** | FastAPI, Python |
+| **AI** | LangGraph, LangChain, Gemini, GPT-4 |
+| **Database** | PostgreSQL, stored procedures |
+| **Payments** | Razorpay |
+
+---
+
+## Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| Frontend | React 19, Vite, JavaScript |
+| Backend | FastAPI, Python, Uvicorn |
+| AI/ML | LangGraph, LangChain, OpenAI GPT-4, Google Gemini |
+| Database | PostgreSQL |
+| Voice | Web Speech API |
+| Payments | Razorpay |
+
+---
+
+## Project Structure
+
+```
+Healthcare-AI-Voice-agent/
+├── backend/                 # FastAPI backend
+│   ├── main.py             # API entry, routes
+│   ├── config.py           # Configuration
+│   ├── db.py               # DB connection
+│   ├── models.py           # Pydantic models
+│   ├── langgraph_llm_agents.py  # LangGraph AI workflow
+│   └── requitements.txt    # Python dependencies
+├── src/                    # React frontend (Vite)
+│   ├── App.jsx, main.jsx, Root.jsx
+│   ├── components/         # Assistant, Dashboard, Recommendation, etc.
+│   ├── context/            # UserContext
+│   └── gemini.js           # Gemini client
+├── sql/
+│   ├── schema.sql          # Tables (users, patients, doctors, appointments, etc.)
+│   └── functions/          # Stored procedures
+│       ├── sp_login_user.sql
+│       ├── sp_get_patient_details.sql
+│       ├── sp_get_specialists.sql
+│       ├── sp_get_doctors_by_specialists.sql
+│       ├── sp_get_medical_history.sql
+│       ├── sp_get_patient_id.sql
+│       └── sp_create_appointment.sql
+├── public/
+├── index.html
+├── package.json            # Frontend deps
+├── vite.config.js
+└── README.md
 ```
 
 ---
 
-## 🌟 Overview
-
-This healthcare AI assistant streamlines the patient care journey by providing:
-- **Intelligent Voice Triage**: Natural language symptom collection and analysis
-- **AI-Powered Diagnosis**: Advanced symptom normalization and specialist recommendation
-- **Smart Doctor Matching**: Automated healthcare provider lookup based on specialization
-- **Seamless Booking**: Integrated appointment scheduling with payment processing
-- **Conversational Interface**: Intuitive voice-enabled user experience
-
----
-
-## ✨ Key Features
-
-### 🎤 Voice-Enabled Interaction
-- Real-time speech-to-text conversion using Web Speech API
-- Natural language processing for symptom collection
-- Voice-guided patient triage workflow
-
-### 🤖 AI-Powered Medical Intelligence
-- Integration with Gemini and GPT-4 for symptom analysis
-- LangGraph-based symptom normalization
-- Intelligent specialist mapping and recommendations
-
-### 🏥 Healthcare Management
-- Comprehensive doctor database with specialization filtering
-- PostgreSQL-powered efficient data retrieval
-- Automated appointment scheduling system
-
-### 💳 Payment Integration
-- Secure payment processing via Razorpay
-- Test mode support for development
-- Transaction management and tracking
-
----
-
-## 🛠️ Technology Stack
-
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **Frontend** | React, CSS, JavaScript | User interface and voice interactions |
-| **Backend** | FastAPI, Python | API services and business logic |
-| **AI/ML** | Gemini, GPT-4, LangGraph | Natural language processing and AI agents |
-| **Database** | PostgreSQL | Data persistence and stored procedures |
-| **Voice** | Web Speech API | Speech recognition and synthesis |
-| **Payments** | Razorpay | Payment processing and gateway |
-| **Deployment** | Uvicorn, Vite | Development and production servers |
-
----
-
-## 📂 Project Architecture
-
-```
-healthcare-ai-assistant/
-├── backend/                    # FastAPI backend services
-│   ├── main.py                # Application entry point
-│   ├── agents/                # LangGraph AI agents
-│   ├── db/                    # Database connections and queries
-│   ├── models.py              # Data models and schemas
-│   ├── config.py              # Configuration management
-│   └── .env                   # Environment variables (excluded from git)
-│
-├── frontend/                   # React frontend application
-│   ├── components/            # Reusable UI components
-│   ├── pages/                 # Application pages/views
-│   └── .env.local             # Frontend environment variables
-│
-├── sql/                       # Database schema and functions
-│   ├── schema.sql             # Database table definitions
-│   └── functions/             # PostgreSQL stored procedures
-│       ├── create_login_function.sql
-│       ├── create_appointment_function.sql
-│       ├── get_patient_details.sql
-│       └── get_doctors_by_specialist.sql
-│
-├── requirements.txt           # Python dependencies
-├── package.json              # Node.js dependencies
-├── .gitignore                # Git ignore rules
-└── README.md                 # Project documentation
-```
-
----
-
-## 🚀 Quick Start Guide
+## Quick Start
 
 ### Prerequisites
 
@@ -233,239 +142,145 @@ healthcare-ai-assistant/
 - **PostgreSQL 12+**
 - **Git**
 
-### 1. 🗄️ Database Setup
+### 1. Database setup
 
-#### Create Database and User
 ```bash
-psql -U postgres
+psql -U postgres -c "CREATE DATABASE healthcare;"
+psql -U postgres -c "CREATE USER fastapi_user WITH PASSWORD 'your_secure_password';"
+psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE healthcare TO fastapi_user;"
 ```
 
-```sql
-CREATE DATABASE healthcare;
-CREATE USER fastapi_user WITH PASSWORD 'your_secure_password';
-GRANT ALL PRIVILEGES ON DATABASE healthcare TO fastapi_user;
-\q
-```
+Apply schema and functions (from project root):
 
-#### Initialize Schema and Functions
 ```bash
 psql -U fastapi_user -d healthcare -f sql/schema.sql
+psql -U fastapi_user -d healthcare -f sql/functions/sp_login_user.sql
+psql -U fastapi_user -d healthcare -f sql/functions/sp_get_patient_details.sql
+psql -U fastapi_user -d healthcare -f sql/functions/sp_get_specialists.sql
+psql -U fastapi_user -d healthcare -f sql/functions/sp_get_doctors_by_specialists.sql
+psql -U fastapi_user -d healthcare -f sql/functions/sp_get_medical_history.sql
+psql -U fastapi_user -d healthcare -f sql/functions/sp_get_patient_id.sql
+psql -U fastapi_user -d healthcare -f sql/functions/sp_create_appointment.sql
 ```
 
-```bash
-psql -U fastapi_user -d healthcare -f sql/functions/create_login_function.sql
-```
+### 2. Backend setup
 
-```bash
-psql -U fastapi_user -d healthcare -f sql/functions/create_appointment_function.sql
-```
-
-```bash
-psql -U fastapi_user -d healthcare -f sql/functions/get_patient_details.sql
-```
-
-```bash
-psql -U fastapi_user -d healthcare -f sql/functions/get_doctors_by_specialist.sql
-```
-
-### 2. 🔧 Backend Configuration
-
-#### Setup Virtual Environment
 ```bash
 cd backend
-```
-
-```bash
 python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requitements.txt
 ```
 
-**Windows:**
-```bash
-venv\Scripts\activate
-```
-
-**macOS/Linux:**
-```bash
-source venv/bin/activate
-```
-
-#### Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-#### Environment Configuration
-Create `.env` file in the `backend/` directory:
+Create `backend/.env` (see [backend/.env.example](backend/.env.example)):
 
 ```env
-# Database Configuration
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=fastapi_user
 DB_PASSWORD=your_secure_password
 DB_NAME=healthcare
-
-# CORS Configuration
 FRONTEND_ORIGIN=http://localhost:5173
-
-# AI API Keys
-OPENAI_API_KEY=your_openai_api_key_here
-GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
-#### Start Backend Server
+Start backend:
+
 ```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 3. 🎨 Frontend Setup
+### 3. Frontend setup
 
-#### Install Dependencies
+From project root:
+
 ```bash
 npm install
 ```
 
-#### Environment Configuration
-Create `.env.local` file in the root directory:
+Create `.env.local` (see [.env.local.example](.env.local.example)):
 
 ```env
-# API Configuration
 VITE_BACKEND_URL=http://localhost:8000
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
-
-# Payment Configuration
-VITE_RAZORPAY_KEY_ID=your_razorpay_key_id_here
+VITE_GEMINI_API_KEY=your_gemini_api_key
+VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
 ```
 
-#### Start Development Server
+Start frontend:
+
 ```bash
 npm run dev
 ```
 
-### 4. 💳 Payment Setup (Optional)
-
-1. Create a [Razorpay account](https://razorpay.com/)
-2. Navigate to API Keys section in dashboard
-3. Copy the Key ID and Key Secret
-4. Update the payment configuration in `frontend/components/Recommendation.jsx`
+Open **http://localhost:5173**.
 
 ---
 
-## 🔑 API Keys Setup
+## API Keys & Configuration
 
-### OpenAI API Key
-1. Visit [OpenAI Platform](https://platform.openai.com/)
-2. Create an account and navigate to API Keys
-3. Generate a new secret key
-4. Add to backend `.env` file
-
-### Google Gemini API Key
-1. Go to [Google AI Studio](https://makersuite.google.com/)
-2. Create a new project or select existing
-3. Generate API key
-4. Add to both backend `.env` and frontend `.env.local`
-
-### Razorpay Configuration
-1. Sign up at [Razorpay Dashboard](https://dashboard.razorpay.com/)
-2. Switch to Test Mode for development
-3. Copy API keys from Settings > API Keys
-4. Configure in frontend environment
+- **OpenAI** – [platform.openai.com](https://platform.openai.com/) → API Keys → add to `backend/.env`
+- **Google Gemini** – [Google AI Studio](https://makersuite.google.com/) → API key → backend `.env` and frontend `.env.local`
+- **Razorpay** – [Razorpay Dashboard](https://dashboard.razorpay.com/) → Test mode → API keys → frontend `.env.local`
 
 ---
 
-## 🏃‍♂️ Running the Application
+## Running the Application
 
-1. **Start PostgreSQL service**
-2. **Launch Backend**: `uvicorn main:app --reload` (from `backend/` directory)
-3. **Launch Frontend**: `npm run dev` (from root directory)
-4. **Access Application**: Navigate to `http://localhost:5173`
+1. Start PostgreSQL.
+2. Backend: `cd backend && uvicorn main:app --reload --port 8000`
+3. Frontend: from root, `npm run dev`
+4. Visit **http://localhost:5173**
+
+**Health check:** `curl http://localhost:8000/`
 
 ---
 
-## 🧪 Testing
+## Troubleshooting
 
-### Backend API Testing
-```bash
-curl http://localhost:8000/health
+| Issue | What to check |
+|-------|----------------|
+| Database errors | PostgreSQL running, `.env` credentials, DB and user created |
+| Voice not working | Use HTTPS or localhost; allow microphone; check Web Speech API support |
+| API errors | No extra spaces in API keys; correct keys in backend vs frontend; quotas |
+
+---
+
+## License
+
+This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
+
+---
+
+**Healthcare AI Voice Agent** – built for better healthcare accessibility.  
+**Author:** [KuchikiRenji](https://github.com/KuchikiRenji) · [Contact](mailto:KuchikiRenji@outlook.com) · Discord: `kuchiki_renji`
+
+---
+
+## For GitHub (Description & Topics)
+
+Use the following in your repo **About** section:
+
+**Description (short):**
+```text
+Full-stack healthcare AI voice assistant: voice triage, symptom analysis, specialist matching & appointment booking. React, FastAPI, LangGraph, PostgreSQL.
 ```
 
-### Database Connection Testing
-```bash
-python -c "from backend.db.connection import get_db_connection; print('DB Connected!' if get_db_connection() else 'DB Connection Failed!')"
+**Topics (add these in GitHub → About → Topics):**
+```text
+healthcare
+healthcare-ai
+voice-assistant
+medical-assistant
+symptom-checker
+patient-triage
+langgraph
+fastapi
+react
+postgresql
+openai
+gemini
+razorpay
+full-stack
+ai-agents
 ```
-
----
-
-## 🚀 Deployment
-
-### Backend Deployment
-- Configure production database credentials
-- Set up environment variables on hosting platform
-- Deploy using platforms like Heroku, Railway, or DigitalOcean
-
-### Frontend Deployment
-- Build production bundle: `npm run build`
-- Deploy to Vercel, Netlify, or similar platforms
-- Update CORS settings in backend for production domain
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the GitHub repository
-- Check existing documentation and FAQs
-- Review the troubleshooting section below
-
----
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Database Connection Error**
-- Verify PostgreSQL is running
-- Check database credentials in `.env`
-- Ensure database and user exist
-
-**Voice Recognition Not Working**
-- Use HTTPS or localhost only
-- Check browser microphone permissions
-- Verify Web Speech API support
-
-**API Key Errors**
-- Validate API keys are correctly set
-- Check for trailing spaces or quotes
-- Verify API key permissions and quotas
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] Multi-language support
-- [ ] Mobile application development
-- [ ] Advanced AI model integration
-- [ ] Telemedicine video consultation
-- [ ] Electronic health records integration
-- [ ] Real-time chat support
-- [ ] Advanced analytics dashboard
-
----
-
-**Built with ❤️ for better healthcare accessibility**
